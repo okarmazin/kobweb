@@ -10,6 +10,7 @@ import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.compose.ui.toAttrs
+import com.varabyte.kobweb.silk.components.icons.CloseIcon
 import com.varabyte.kobweb.silk.components.icons.ExclaimIcon
 import com.varabyte.kobweb.silk.components.icons.InfoIcon
 import com.varabyte.kobweb.silk.components.icons.LightbulbIcon
@@ -20,6 +21,7 @@ import com.varabyte.kobweb.silk.components.icons.WarningIcon
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.style.ComponentKind
 import com.varabyte.kobweb.silk.style.CssStyle
+import com.varabyte.kobweb.silk.style.CssStyleScope
 import com.varabyte.kobweb.silk.style.CssStyleVariant
 import com.varabyte.kobweb.silk.style.addVariant
 import com.varabyte.kobweb.silk.style.toModifier
@@ -131,6 +133,16 @@ class CalloutType(
         )
 
         /**
+         * A special fallback type provided so that markdown handling can show something if a specified type is not
+         * recognized.
+         */
+        val UNKNOWN = CalloutType(
+            { CloseIcon() },
+            "???",
+            Colors.Magenta
+        )
+
+        /**
          * Information that a user should be aware of to prevent errors.
          */
         val WARNING = CalloutType(
@@ -165,6 +177,12 @@ val CalloutStyle = CssStyle<CalloutKind> {
     }
 }
 
+private fun CssStyleScope.markdownParagraphHack() {
+    cssRule(">.callout-body>p:last-child") {
+        Modifier.marginBlock { end(0.px) }
+    }
+}
+
 // Style from https://github.com/orgs/community/discussions/16925
 val LeftBorderedCalloutVariant = CalloutStyle.addVariant {
     base {
@@ -178,6 +196,8 @@ val LeftBorderedCalloutVariant = CalloutStyle.addVariant {
             .color(CalloutVars.Color.value())
             .margin { bottom(1.cssRem) }
     }
+
+    markdownParagraphHack()
 }
 
 // Style from https://squidfunk.github.io/mkdocs-material/reference/admonitions/
@@ -201,6 +221,8 @@ val OutlinedCalloutVariant = CalloutStyle.addVariant {
     cssRule(">.callout-body") {
         Modifier.padding(0.5.cssRem, 1.cssRem)
     }
+
+    markdownParagraphHack()
 }
 
 object CalloutDefaults {

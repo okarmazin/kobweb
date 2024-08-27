@@ -37,6 +37,7 @@ and images:
 
 You can use blockquotes:
 
+> [!QUOTE]
 > The trouble with quotes on the internet is you never know if they are genuine.
 >
 > -- Abraham Lincoln

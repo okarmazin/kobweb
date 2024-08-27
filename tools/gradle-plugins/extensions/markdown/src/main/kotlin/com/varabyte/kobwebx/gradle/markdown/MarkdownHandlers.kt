@@ -330,8 +330,27 @@ abstract class MarkdownHandlers @Inject constructor(project: Project, newDefault
             childrenOverride = listOf(Text(code.literal))
             "$JB_DOM.Code"
         }
-        blockquote.convention {
-            "$KOBWEB_DOM.GenericTag(\"blockquote\")"
+        blockquote.convention { blockQuote ->
+            val silkCallout = if (useSilk.get()) {
+                blockQuote.firstChild.firstChild?.let { firstChild ->
+                    firstChild as Text
+                    val regex = """\[!(.*)]( "(.+)"$)?""".toRegex()
+                    val typeMatch = regex.find(firstChild.literal) ?: return@let null
+                    firstChild.literal = firstChild.literal.substringAfter(typeMatch.value)
+
+                    val type = typeMatch.groupValues[1]
+                    val isLabelSet = typeMatch.groupValues[2].isNotBlank()
+                    val label = typeMatch.groupValues[3].takeIf { isLabelSet }
+                    """
+                        $SILK.display.Callout(
+                             type = $SILK.display.CalloutType.entries.firstOrNull { it.label.equals("$type", ignoreCase = true) } ?: $SILK.display.CalloutType.UNKNOWN,
+                             label = if ($SILK.display.CalloutType.entries.none { it.label.equals("$type", ignoreCase = true) }) "Invalid callout type [!$type]" else $label,
+                        )
+                    """.trimIndent()
+                }
+            } else null
+
+            silkCallout ?: "$KOBWEB_DOM.GenericTag(\"blockquote\")"
         }
         table.convention { "$JB_DOM.Table" }
         thead.convention { "$JB_DOM.Thead" }
